@@ -1,7 +1,7 @@
 import pytest
 from datetime import date, timedelta
 
-from webservice.src.model import Batch, OrderLine, allocate
+from webservice.src.model import Batch, OrderLine, allocate, OutOfStock
 
 
 @pytest.fixture()
@@ -52,6 +52,13 @@ class TestAllocationServices:
         allocation = allocate(line, [in_stock_batch, shipment_batch])
 
         assert allocation == in_stock_batch.reference
+
+    def test_raises_out_of_stock_exception_if_cannot_allocate(self):
+        batch = Batch("batch1", "WOOD-CABINET", 10, eta=date.today())
+        allocate(OrderLine("order1", "WOOD-CABINET", 10), [batch])
+
+        with pytest.raises(OutOfStock, match="WOOD-CABINET"):
+            allocate(OrderLine("order2", "WOOD-CABINET", 1), [batch])
 
 
 class TestAllocationObjects:
