@@ -29,6 +29,17 @@ class Batch:
 
     """
 
+    # make explicit that Batch is an entity (they have persistant
+    # identities even if their values change); in this case the
+    # identity is specified by self.reference
+    def __eq__(self, other):
+        if not isinstance(other, Batch):
+            return False
+        return other.reference == self.reference
+
+    def __hash__(self):
+        return hash(self.reference)
+
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
         self.reference = ref
         self.sku = sku
