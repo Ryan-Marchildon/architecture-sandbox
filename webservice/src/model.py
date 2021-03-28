@@ -41,6 +41,20 @@ class Batch:
         return hash(self.reference)
 
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
+        """
+        Parameters
+        ----------
+        reference : str
+            Unique identifying reference number for this batch.
+
+        sku : str
+            Stock keeping unit, identifing the product in this batch.
+
+        eta : str
+            Estimated time of arrival if shipment; None if already in-stock.
+
+        """
+
         self.reference = ref
         self.sku = sku
         self.eta = eta
