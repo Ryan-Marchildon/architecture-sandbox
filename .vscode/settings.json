@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/home/ryan/miniconda3/envs/webservice/bin/python",
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "/home/ryan/miniconda3/envs/webservice/bin/black",
+    "editor.formatOnSave": true,
+    "editor.definitionLinkOpensInPeek": true,
+}
