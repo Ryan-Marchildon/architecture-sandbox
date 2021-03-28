@@ -1,7 +1,17 @@
 import pytest
-from datetime import date
+from datetime import date, timedelta
 
-from webservice.src.model import Batch, OrderLine
+from webservice.src.model import Batch, OrderLine, allocate
+
+
+@pytest.fixture()
+def tomorrow():
+    return date.today() + timedelta(days=1)
+
+
+@pytest.fixture()
+def next_week():
+    return date.today() + timedelta(days=7)
 
 
 def make_batch_and_line(sku, batch_qty, line_qty):
@@ -9,6 +19,39 @@ def make_batch_and_line(sku, batch_qty, line_qty):
         Batch("batch-001", sku, batch_qty, eta=date.today()),
         OrderLine("order-123", sku, line_qty),
     )
+
+
+class TestAllocationServices:
+    def test_prefers_current_stock_batches_to_shipments(self, tomorrow):
+        in_stock_batch = Batch("in-stock-batch", "LAVA-LAMP", 100, eta=None)
+        shipment_batch = Batch("shipment-batch", "LAVA-LAMP", 100, eta=tomorrow)
+        line = OrderLine("oref", "LAVA-LAMP", 10)
+
+        allocate(line, [in_stock_batch, shipment_batch])
+
+        assert in_stock_batch.available_quantity == 90
+        assert shipment_batch.available_quantity == 100
+
+    def test_prefers_earlier_batches(self, tomorrow, next_week):
+        earliest = Batch("speedy-batch", "SILVER-SPOON", 100, eta=date.today())
+        medium = Batch("normal-batch", "SILVER-SPOON", 100, eta=tomorrow)
+        latest = Batch("slow-batch", "SILVER-SPOON", 100, eta=next_week)
+        line = OrderLine("order1", "SILVER-SPOON", 10)
+
+        allocate(line, [medium, earliest, latest])
+
+        assert earliest.available_quantity == 90
+        assert medium.available_quantity == 100
+        assert latest.available_quantity == 100
+
+    def test_returns_allocated_batch_ref(self, tomorrow):
+        in_stock_batch = Batch("in-stock-batch-ref", "FANCY-CHAIR", 100, eta=None)
+        shipment_batch = Batch("shipment-batch-ref", "FANCY-CHAIR", 100, eta=tomorrow)
+        line = OrderLine("oref", "FANCY-CHAIR", 10)
+
+        allocation = allocate(line, [in_stock_batch, shipment_batch])
+
+        assert allocation == in_stock_batch.reference
 
 
 class TestAllocationObjects:

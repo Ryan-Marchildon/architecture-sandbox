@@ -3,13 +3,15 @@ Domain model for order allocation service.
 
 """
 
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 from dataclasses import dataclass
 
 from webservice.utils.logger import log
 
-
+# --------------
+# DOMAIN OBJECTS
+# --------------
 @dataclass(frozen=True)
 class OrderLine:
     """
@@ -29,9 +31,10 @@ class Batch:
 
     """
 
-    # make explicit that Batch is an entity (they have persistant
-    # identities even if their values change); in this case the
-    # identity is specified by self.reference
+    # NOTE: with __eq__ and __hash__, we make explicit that Batch
+    # is an entity (instances have persistant identities even if
+    # their values change); in this case the identity is specified
+    # by self.reference
     def __eq__(self, other):
         if not isinstance(other, Batch):
             return False
@@ -39,6 +42,16 @@ class Batch:
 
     def __hash__(self):
         return hash(self.reference)
+
+    # NOTE: with __gt__ we get to override how sorted() acts on this object,
+    # i.e. how it determines whether one instance is 'greater' than another;
+    # here we sort on eta, with earlier eta coming first (None = already in stock)
+    def __gt__(self, other):
+        if self.eta is None:
+            return False
+        if other.eta is None:
+            return True
+        return self.eta > other.eta
 
     def __init__(self, ref: str, sku: str, qty: int, eta: Optional[date]):
         """
@@ -94,3 +107,12 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+
+
+# ---------------
+# DOMAIN SERVICES
+# ---------------
+def allocate(line: OrderLine, batches: List[Batch]) -> str:
+    batch = next(b for b in sorted(batches) if b.can_allocate(line))
+    batch.allocate(line)
+    return batch.reference
