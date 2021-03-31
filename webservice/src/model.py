@@ -12,7 +12,9 @@ from webservice.utils.logger import log
 # --------------
 # DOMAIN OBJECTS
 # --------------
-@dataclass(frozen=False)
+@dataclass(
+    unsafe_hash=True
+)  # must set unsafe_hash or this gets marked as unhashable type
 class OrderLine:
     """
     Represents a line on a customer product order.
