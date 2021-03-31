@@ -1,5 +1,6 @@
 import abc
-from webservice.src import model
+
+from src import model
 
 
 class AbstractRepository(abc.ABC):

@@ -3,9 +3,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from webservice.src import model
-from webservice.src.orm import metadata
-from webservice.src.repository import SqlAlchemyRepository
+from src import model
+from src.orm import metadata
+from src.repository import SqlAlchemyRepository
 
 
 def test_repository_can_save_a_batch(session):

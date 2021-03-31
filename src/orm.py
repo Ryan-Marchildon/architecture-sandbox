@@ -1,7 +1,7 @@
 from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import mapper, relationship
 
-from webservice.src import model
+from src import model
 
 
 metadata = MetaData()

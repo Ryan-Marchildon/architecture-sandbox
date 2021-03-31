@@ -1,7 +1,7 @@
 import pytest
 from datetime import date, timedelta
 
-from webservice.src.model import Batch, OrderLine, allocate, OutOfStock
+from src.model import Batch, OrderLine, allocate, OutOfStock
 
 
 @pytest.fixture()

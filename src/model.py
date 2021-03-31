@@ -7,7 +7,7 @@ from typing import Optional, List
 from datetime import date
 from dataclasses import dataclass
 
-from webservice.utils.logger import log
+from src.utils.logger import log
 
 # --------------
 # DOMAIN OBJECTS
