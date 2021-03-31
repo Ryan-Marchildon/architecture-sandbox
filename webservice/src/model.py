@@ -12,7 +12,7 @@ from webservice.utils.logger import log
 # --------------
 # DOMAIN OBJECTS
 # --------------
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class OrderLine:
     """
     Represents a line on a customer product order.
