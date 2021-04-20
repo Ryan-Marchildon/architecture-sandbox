@@ -28,7 +28,7 @@ class OrderLine:
 
 class Batch:
     """
-    Represents a batch of stock placed by the purchasing department,
+    Represents a batch of stock ordered by the purchasing department,
     en route from supplier to warehouse.
 
     """
