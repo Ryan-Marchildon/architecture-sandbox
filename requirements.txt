@@ -1,3 +1,4 @@
-pytest
-black
-sqlalchemy
+pytest==6.2.2
+black==20.8b1
+SQLAlchemy==1.4.3
+Flask==1.1.2
