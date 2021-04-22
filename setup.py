@@ -12,7 +12,7 @@ setup(
     author="Ryan Marchildon",
     description=("A playground for python architecture patterns"),
     license="BSD",
-    packages=["webservice", "tests"],
+    packages=["src", "tests"],
     long_description=read("README.md"),
     setup_requires=["black"],
     install_requires=read("requirements.txt"),
