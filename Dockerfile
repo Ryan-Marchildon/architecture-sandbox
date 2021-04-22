@@ -1,16 +1,19 @@
 FROM python:3.9.4-alpine3.13
 
 # basic build dependencies
-RUN apk add --no-cache --virtual .build-deps gcc postgresql-dev musl-dev python3-dev
+RUN apk add --no-cache --virtual .build-deps gcc g++ postgresql-dev musl-dev python3-dev
 RUN apk add libpq
-RUN apk del --no-cache .build-deps
 
 # add an install our source code
 COPY src/ /src/
 COPY tests/ /tests/
 COPY setup.py /setup.py
 COPY requirements.txt /requirements.txt
+COPY README.md /README.md
 RUN pip install -e /
+
+# clean-up
+RUN apk del --no-cache .build-deps
 
 # launch the flask app
 WORKDIR /src

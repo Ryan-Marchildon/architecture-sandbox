@@ -16,7 +16,7 @@ services:
             - ./src:/src
             - ./tests:/tests
         ports:
-            -"5005:80"
+            - "5005:80"
 
     postgres:
         image: postgres:12.6
