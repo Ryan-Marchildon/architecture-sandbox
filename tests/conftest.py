@@ -5,9 +5,10 @@ import requests
 from requests.exceptions import ConnectionError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
+from sqlalchemy.exc import OperationalError
 
-from src.orm import metadata, start_mappers
-from src import config
+from src.allocation.adapters.orm import metadata, start_mappers
+from src.allocation import config
 
 
 @pytest.fixture
@@ -71,10 +72,10 @@ def add_stock(postgres_session):
                 " VALUES (:ref, :sku, :qty, :eta)",
                 dict(ref=ref, sku=sku, qty=qty, eta=eta),
             )
-            batch_id = postgres_session.execute(
+            [[batch_id]] = postgres_session.execute(
                 "SELECT id FROM batches WHERE reference=:ref AND sku=:sku",
                 dict(ref=ref, sku=sku),
-            )[0][0]
+            )
             batches_added.add(batch_id)
             skus_added.add(sku)
         postgres_session.commit()

@@ -4,4 +4,6 @@
     "python.formatting.blackPath": "/home/ryan/miniconda3/envs/webservice/bin/black",
     "editor.formatOnSave": true,
     "editor.definitionLinkOpensInPeek": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
 }
