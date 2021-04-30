@@ -50,7 +50,7 @@ def test_deallocate_adjusts_available_quantity():
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 90
 
-    services.deallocate(batch, line, session)
+    services.deallocate(line, repo, session)
     assert batch.available_quantity == 100
 
 
@@ -65,14 +65,13 @@ def test_deallocate_results_in_correct_quantity():
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 60
 
-    services.deallocate(batch, line_2, session)
+    services.deallocate(line_2, repo, session)
     assert batch.available_quantity == 90
 
 
 def test_trying_to_deallocate_unallocated_batch():
     repo, session = FakeRepository([]), FakeSession()
-    batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
     line = model.OrderLine("o1", "BLUE-PLINTH", 10)
 
     with pytest.raises(model.OrderNotFound):
-        services.deallocate(batch, line, session)
+        services.deallocate(line, repo, session)
