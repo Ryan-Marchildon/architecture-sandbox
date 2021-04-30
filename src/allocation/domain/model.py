@@ -88,7 +88,7 @@ class Batch:
         self._purchased_quantity = qty
         self._allocations = set()  # type: Set[OrderLine]
 
-    def allocate(self, line: OrderLine) -> bool:
+    def allocate(self, line: OrderLine):
         """
         Allocates part of a batch to the specified order line.
 
@@ -96,13 +96,10 @@ class Batch:
         if self.can_allocate(line):
             self._allocations.add(line)
         else:
-            raise
-
-            log.info(
+            raise OutOfStock(
                 "Cannot allocate to this batch: skus do not "
                 "match or requested qty is less than available qty."
             )
-            return False
 
     def deallocate(self, line: OrderLine):
         if line in self._allocations:
