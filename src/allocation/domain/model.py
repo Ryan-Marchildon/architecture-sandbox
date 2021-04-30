@@ -9,6 +9,18 @@ from dataclasses import dataclass
 
 from src.utils.logger import log
 
+
+# -----------------
+# DOMAIN EXCEPTIONS
+# -----------------
+class OrderNotFound(Exception):
+    pass
+
+
+class OutOfStock(Exception):
+    pass
+
+
 # --------------
 # DOMAIN OBJECTS
 # --------------
@@ -83,21 +95,22 @@ class Batch:
         """
         if self.can_allocate(line):
             self._allocations.add(line)
-            return True
         else:
+            raise
+
             log.info(
                 "Cannot allocate to this batch: skus do not "
                 "match or requested qty is less than available qty."
             )
             return False
 
-    def deallocate(self, line: OrderLine) -> bool:
+    def deallocate(self, line: OrderLine):
         if line in self._allocations:
             self._allocations.remove(line)
-            return True
         else:
-            log.info("Could not de-allocate line; does not exist in this batch.")
-            return False
+            raise OrderNotFound(
+                f"Could not de-allocate order line; does not exist in this batch."
+            )
 
     @property
     def allocated_quantity(self) -> int:
@@ -114,10 +127,6 @@ class Batch:
 # ---------------
 # DOMAIN SERVICES
 # ---------------
-class OutOfStock(Exception):
-    pass
-
-
 def allocate(line: OrderLine, batches: List[Batch]) -> str:
     try:
         batch = next(b for b in sorted(batches) if b.can_allocate(line))

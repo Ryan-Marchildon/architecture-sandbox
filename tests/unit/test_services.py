@@ -40,20 +40,39 @@ def test_commits():
     assert session.committed is True
 
 
-# def test_deallocate_decrements_available_quantity():
-#     repo, session = FakeRepository([]), FakeSession()
-#     services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
-#     services.allocate("o1", "BLUE-PLINTH", 10, repo, session)
-#     batch = repo.get(reference="b1")
-#     assert batch.available_quantity == 90
-#     # services.deallocate(...
-#     ...
-#     assert batch.available_quantity == 100
+def test_deallocate_adjusts_available_quantity():
+    repo, session = FakeRepository([]), FakeSession()
+    staged_batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
+    line = model.OrderLine("o1", "BLUE-PLINTH", 10)
+    services.add_batch(staged_batch, repo, session)
+    services.allocate(line, repo, session)
+
+    batch = repo.get(reference="b1")
+    assert batch.available_quantity == 90
+
+    services.deallocate(batch, line, session)
+    assert batch.available_quantity == 100
 
 
-# def test_deallocate_decrements_correct_quantity():
-#     ...  #  TODO
+def test_deallocate_results_in_correct_quantity():
+    repo, session = FakeRepository([]), FakeSession()
+    staged_batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
+    line_1 = model.OrderLine("o1", "BLUE-PLINTH", 10)
+    line_2 = model.OrderLine("o2", "BLUE-PLINTH", 30)
+    services.add_batch(staged_batch, repo, session)
+    services.allocate(line_1, repo, session)
+    services.allocate(line_2, repo, session)
+    batch = repo.get(reference="b1")
+    assert batch.available_quantity == 60
+
+    services.deallocate(batch, line_2, session)
+    assert batch.available_quantity == 90
 
 
-# def test_trying_to_deallocate_unallocated_batch():
-#     ...  #  TODO: should this error or pass silently? up to you.
+def test_trying_to_deallocate_unallocated_batch():
+    repo, session = FakeRepository([]), FakeSession()
+    batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
+    line = model.OrderLine("o1", "BLUE-PLINTH", 10)
+
+    with pytest.raises(model.OrderNotFound):
+        services.deallocate(batch, line, session)

@@ -1,7 +1,14 @@
 import pytest
 from datetime import date, timedelta
 
-from src.allocation.domain.model import Batch, OrderLine, allocate, OutOfStock
+from src.utils.logger import log
+from src.allocation.domain.model import (
+    Batch,
+    OrderLine,
+    allocate,
+    OutOfStock,
+    OrderNotFound,
+)
 
 
 @pytest.fixture()
@@ -89,7 +96,11 @@ class TestAllocationObjects:
 
     def test_can_only_deallocate_allocated_lines(self):
         batch, unallocated_line = make_batch_and_line("DECORATIVE-TRINKET", 20, 2)
-        batch.deallocate(unallocated_line)
+        try:
+            batch.deallocate(unallocated_line)
+        except OrderNotFound as e:
+            log.info(e)
+
         assert batch.available_quantity == 20
 
     def test_allocation_is_idempotent(self):
