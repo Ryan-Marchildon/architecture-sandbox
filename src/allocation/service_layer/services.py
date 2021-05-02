@@ -14,24 +14,29 @@ def is_valid_sku(sku, batches):
     return sku in {batch.sku for batch in batches}
 
 
-def add_batch(batch: model.Batch, repo: AbstractRepository, session):
-    repo.add(batch)
+def add_batch(
+    ref: str, sku: str, qty: int, eta: Optional[date], repo: AbstractRepository, session
+):
+    repo.add(model.Batch(ref, sku, qty, eta))
     session.commit()
 
 
-def allocate(line: model.OrderLine, repo: AbstractRepository, session) -> str:
+def allocate(
+    orderid: str, sku: str, qty: int, repo: AbstractRepository, session
+) -> str:
     batches = repo.list()
-    if not is_valid_sku(line.sku, batches):
-        raise InvalidSku(f"Invalid sku {line.sku}")
-    batchref = model.allocate(line, batches)
+    if not is_valid_sku(sku, batches):
+        raise InvalidSku(f"Invalid sku {sku}")
+    batchref = model.allocate(model.OrderLine(orderid, sku, qty), batches)
     session.commit()
     return batchref
 
 
-def deallocate(line: model.OrderLine, repo: AbstractRepository, session):
+def deallocate(orderid: str, sku: str, qty: int, repo: AbstractRepository, session):
     # to scale, this would best be done by querying the allocations
     # table directly, but since we lack it in the repo, we'll use
     # a helper instead
+    line = model.OrderLine(orderid, sku, qty)
     batches = repo.list()
     for batch in batches:
         if line in batch._allocations:

@@ -13,65 +13,55 @@ class FakeSession:
 
 
 def test_returns_allocation():
-    line = model.OrderLine("o1", "SHIFTY-LAMP", 10)
-    batch = model.Batch("b1", "SHIFTY-LAMP", 100, eta=None)
-    repo = FakeRepository([batch])
-
-    result = services.allocate(line, repo, FakeSession())
+    repo = FakeRepository.for_batch("b1", "SHIFTY-LAMP", 100, eta=None)
+    result = services.allocate("o1", "SHIFTY-LAMP", 10, repo, FakeSession())
     assert result == "b1"
 
 
 def test_error_for_invalid_sku():
-    line = model.OrderLine("o1", "NONEXISTENT-SKU", 10)
-    batch = model.Batch("b1", "A-REAL-SKU", 100, eta=None)
-    repo = FakeRepository([batch])
-
+    repo = FakeRepository.for_batch("b1", "A-REAL-SKU", 100, eta=None)
     with pytest.raises(services.InvalidSku, match="Invalid sku NONEXISTENT-SKU"):
-        services.allocate(line, repo, FakeSession())
+        services.allocate("o1", "NONEXISTENT-SKU", 10, repo, FakeSession())
 
 
 def test_commits():
-    line = model.OrderLine("o1", "SHINY-MIRROR", 10)
-    batch = model.Batch("b1", "SHINY-MIRROR", 100, eta=None)
-    repo = FakeRepository([batch])
+    repo = FakeRepository.for_batch("b1", "SHINY-MIRROR", 100, eta=None)
     session = FakeSession()
-
-    services.allocate(line, repo, session)
+    services.allocate("o1", "SHINY-MIRROR", 10, repo, session)
     assert session.committed is True
+
+
+def test_add_batch():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "DELICIOUS-ARMCHAIR", 100, None, repo, session)
+    assert repo.get("b1") is not None
+    assert session.committed
 
 
 def test_deallocate_adjusts_available_quantity():
     repo, session = FakeRepository([]), FakeSession()
-    staged_batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
-    line = model.OrderLine("o1", "BLUE-PLINTH", 10)
-    services.add_batch(staged_batch, repo, session)
-    services.allocate(line, repo, session)
-
+    services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
+    services.allocate("o1", "BLUE-PLINTH", 10, repo, session)
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 90
 
-    services.deallocate(line, repo, session)
+    services.deallocate("o1", "BLUE-PLINTH", 10, repo, session)
     assert batch.available_quantity == 100
 
 
 def test_deallocate_results_in_correct_quantity():
     repo, session = FakeRepository([]), FakeSession()
-    staged_batch = model.Batch("b1", "BLUE-PLINTH", 100, None)
-    line_1 = model.OrderLine("o1", "BLUE-PLINTH", 10)
-    line_2 = model.OrderLine("o2", "BLUE-PLINTH", 30)
-    services.add_batch(staged_batch, repo, session)
-    services.allocate(line_1, repo, session)
-    services.allocate(line_2, repo, session)
+    services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
+    services.allocate("o1", "BLUE-PLINTH", 10, repo, session)
+    services.allocate("o2", "BLUE-PLINTH", 30, repo, session)
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 60
 
-    services.deallocate(line_2, repo, session)
+    services.deallocate("o2", "BLUE-PLINTH", 30, repo, session)
     assert batch.available_quantity == 90
 
 
 def test_trying_to_deallocate_unallocated_batch():
     repo, session = FakeRepository([]), FakeSession()
-    line = model.OrderLine("o1", "BLUE-PLINTH", 10)
-
     with pytest.raises(model.OrderNotFound):
-        services.deallocate(line, repo, session)
+        services.deallocate("o1", "BLUE-PLINTH", 10, repo, session)

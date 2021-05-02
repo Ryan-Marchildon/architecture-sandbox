@@ -43,3 +43,9 @@ class FakeRepository(AbstractRepository):
 
     def list(self):
         return list(self._batches)
+
+    # fixtures for keeping all of our tests' domain-model dependencies,
+    # so we can keep those dependencies decoupled from our test definitions
+    @staticmethod
+    def for_batch(ref, sku, qty, eta=None):
+        return FakeRepository([model.Batch(ref, sku, qty, eta)])
