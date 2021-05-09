@@ -1,4 +1,5 @@
 import time
+from uuid import uuid4
 import threading
 
 import pytest
@@ -7,10 +8,35 @@ from src.allocation.domain import model
 from src.allocation.service_layer import unit_of_work
 
 
-def insert_batch(session, ref, sku, qty, eta):
+def random_suffix():
+    return uuid4()
+
+
+def create_tag(name=None):
+    tag = "" if not name else f"{name}-"
+    return tag
+
+
+def random_sku(name=None):
+    return f"sku-{create_tag(name)}{random_suffix()}"
+
+
+def random_batchref(name=None):
+    return f"batch-{create_tag(name)}{random_suffix()}"
+
+
+def random_orderid(name=None):
+    return f"order-{create_tag(name)}{random_suffix()}"
+
+
+def insert_batch(session, ref, sku, qty, eta, product_version=1):
     session.execute(
-        "INSERT INTO batches (reference, sku, _purchased_quantity, eta) "
-        "VALUES (:ref, :sku, :qty, :eta)",
+        "INSERT INTO products (sku, version_number) VALUES (:sku, :version)",
+        dict(sku=sku, version=product_version),
+    )
+    session.execute(
+        "INSERT INTO batches (reference, sku, _purchased_quantity, eta)"
+        " VALUES (:ref, :sku, :qty, :eta)",
         dict(ref=ref, sku=sku, qty=qty, eta=eta),
     )
 
@@ -35,9 +61,9 @@ def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
 
     uow = unit_of_work.SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        batch = uow.batches.get(reference="batch1")
+        product = uow.products.get(sku="WACKY-WORKBENCH")
         line = model.OrderLine("o1", "WACKY-WORKBENCH", 10)
-        batch.allocate(line)
+        product.allocate(line)
         uow.commit()
 
     batchref = get_allocated_batch_ref(session, "o1", "WACKY-WORKBENCH")
