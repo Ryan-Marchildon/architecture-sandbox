@@ -24,30 +24,6 @@ class OutOfStock(Exception):
 # --------------
 # DOMAIN OBJECTS
 # --------------
-class Product:
-    """
-    Our chosen aggregate for this domain service.
-    This will be the single entrypoint into our domain model.
-    """
-
-    def __init__(self, sku: str, batches: List[Batch], version_number: int = 0):
-        self.sku = sku
-        self.batches = batches
-        self.version_number = version_number
-
-    def allocate(self, line: OrderLine) -> str:
-        """
-        This implements our earlier domain service for 'allocate'.
-        """
-        try:
-            batch = next(b for b in sorted(self.batches) if b.can_allocate(line))
-            batch.allocate(line)
-            self.version_number += 1
-            return batch.reference
-        except StopIteration:
-            raise OutOfStock(f"Out of stock for sku {line.sku}")
-
-
 @dataclass(
     unsafe_hash=True
 )  # must set unsafe_hash or this gets marked as unhashable type
@@ -143,3 +119,27 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+
+
+class Product:
+    """
+    Our chosen aggregate for this domain service.
+    This will be the single entrypoint into our domain model.
+    """
+
+    def __init__(self, sku: str, batches: List[Batch], version_number: int = 0):
+        self.sku = sku
+        self.batches = batches
+        self.version_number = version_number
+
+    def allocate(self, line: OrderLine) -> str:
+        """
+        This implements our earlier domain service for 'allocate'.
+        """
+        try:
+            batch = next(b for b in sorted(self.batches) if b.can_allocate(line))
+            batch.allocate(line)
+            self.version_number += 1
+            return batch.reference
+        except StopIteration:
+            raise OutOfStock(f"Out of stock for sku {line.sku}")

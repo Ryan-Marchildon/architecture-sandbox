@@ -10,7 +10,7 @@ DEFAULT_SESSION_FACTORY = sessionmaker(bind=create_engine(config.get_postgres_ur
 
 
 class AbstractUnitOfWork(abc.ABC):
-    batches: repository.AbstractRepository
+    products: repository.AbstractProductRepository
 
     def __enter__(self):
         return self
@@ -33,7 +33,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def __enter__(self):
         self.session = self.session_factory()  # type: Session
-        self.batches = repository.SqlAlchemyRepository(self.session)
+        self.products = repository.SqlAlchemyRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):
@@ -45,3 +45,16 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
+
+
+# for mocks during tests
+class FakeUnitOfWork(AbstractUnitOfWork):
+    def __init__(self):
+        self.products = repository.FakeRepository([])
+        self.committed = False
+
+    def commit(self):
+        self.committed = True
+
+    def rollback(self):
+        pass
