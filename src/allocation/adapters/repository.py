@@ -25,7 +25,7 @@ class SqlAlchemyRepository(AbstractProductRepository):
         self.session.add(product)
 
     def get(self, sku: str):
-        return self.session.query(model.Product).filter_by(sku=sku).one()
+        return self.session.query(model.Product).filter_by(sku=sku).first()
 
     def list(self):
         return self.session.query(model.Product).all()

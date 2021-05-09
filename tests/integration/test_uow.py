@@ -1,9 +1,11 @@
 import time
 from uuid import uuid4
 import threading
+import traceback
 
 import pytest
 
+from src.utils.logger import log
 from src.allocation.domain import model
 from src.allocation.service_layer import unit_of_work
 

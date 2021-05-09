@@ -3,15 +3,7 @@ from sqlalchemy.orm import mapper, relationship
 
 from src.allocation.domain import model
 
-
 metadata = MetaData()
-
-products = Table(
-    "products",
-    metadata,
-    Column("sku", String(255), primary_key=True),
-    Column("version_number", Integer, nullable=False),
-)
 
 order_lines = Table(
     "order_lines",
@@ -20,6 +12,13 @@ order_lines = Table(
     Column("sku", String(255)),
     Column("qty", Integer, nullable=False),
     Column("orderid", String(255)),
+)
+
+products = Table(
+    "products",
+    metadata,
+    Column("sku", String(255), primary_key=True),
+    Column("version_number", Integer, nullable=False, server_default="0"),
 )
 
 batches = Table(

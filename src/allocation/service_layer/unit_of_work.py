@@ -6,7 +6,9 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 from src.allocation import config
 from src.allocation.adapters import repository
 
-DEFAULT_SESSION_FACTORY = sessionmaker(bind=create_engine(config.get_postgres_uri()))
+DEFAULT_SESSION_FACTORY = sessionmaker(
+    bind=create_engine(config.get_postgres_uri(), isolation_level="REPEATABLE READ")
+)
 
 
 class AbstractUnitOfWork(abc.ABC):
