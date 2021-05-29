@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from src.allocation import config
 from src.allocation.domain import model
 from src.allocation.adapters import orm
-from src.allocation.service_layer import services, unit_of_work
+from src.allocation.service_layer import handlers, unit_of_work
 
 orm.start_mappers()
 
@@ -16,10 +16,10 @@ app = Flask(__name__)
 def allocate_endpoint():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     try:
-        batchref = services.allocate(
+        batchref = handlers.allocate(
             request.json["orderid"], request.json["sku"], request.json["qty"], uow
         )
-    except services.InvalidSku as e:
+    except handlers.InvalidSku as e:
         return jsonify({"message": str(e)}), 400
 
     return jsonify({"batchref": batchref}), 201
@@ -29,10 +29,10 @@ def allocate_endpoint():
 def deallocate_endpoint():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     try:
-        batchref = services.deallocate(
+        batchref = handlers.deallocate(
             request.json["orderid"], request.json["sku"], request.json["qty"], uow
         )
-    except services.InvalidSku as e:
+    except handlers.InvalidSku as e:
         return jsonify({"message": str(e)}), 400
 
     return jsonify({"batchref": batchref}), 201
@@ -44,7 +44,7 @@ def add_batch():
     eta = request.json["eta"]
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
-    services.add_batch(
+    handlers.add_batch(
         request.json["ref"], request.json["sku"], request.json["qty"], eta, uow
     )
     return "OK", 201
