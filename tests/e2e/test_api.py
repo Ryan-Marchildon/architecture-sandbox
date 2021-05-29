@@ -79,7 +79,8 @@ def test_deallocate():
     r = requests.post(
         f"{url}/allocate", json={"orderid": order2, "sku": sku, "qty": 100}
     )
-    assert r.status_code == 400
+    assert r.status_code == 201
+    assert r.json()["batchref"] == None  # tells us it was not allocated
 
     # deallocate
     r = requests.post(

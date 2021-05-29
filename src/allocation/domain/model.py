@@ -3,12 +3,12 @@ Domain model for order allocation service.
 
 """
 
-from typing import Optional, List
+from typing import Optional, List, Set
 from datetime import date
 from dataclasses import dataclass
 
 from src.utils.logger import log
-
+from src.allocation.domain import events
 
 # -----------------
 # DOMAIN EXCEPTIONS
@@ -131,6 +131,7 @@ class Product:
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
+        self.events = []  # type: List[events.Event]
 
     def allocate(self, line: OrderLine) -> str:
         """
@@ -142,4 +143,5 @@ class Product:
             self.version_number += 1
             return batch.reference
         except StopIteration:
-            raise OutOfStock(f"Out of stock for sku {line.sku}")
+            self.events.append(events.OutOfStock(line.sku))
+            return None

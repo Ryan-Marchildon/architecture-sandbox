@@ -19,7 +19,7 @@ def allocate_endpoint():
         batchref = services.allocate(
             request.json["orderid"], request.json["sku"], request.json["qty"], uow
         )
-    except (model.OutOfStock, services.InvalidSku) as e:
+    except services.InvalidSku as e:
         return jsonify({"message": str(e)}), 400
 
     return jsonify({"batchref": batchref}), 201
@@ -32,7 +32,7 @@ def deallocate_endpoint():
         batchref = services.deallocate(
             request.json["orderid"], request.json["sku"], request.json["qty"], uow
         )
-    except (model.OutOfStock, services.InvalidSku) as e:
+    except services.InvalidSku as e:
         return jsonify({"message": str(e)}), 400
 
     return jsonify({"batchref": batchref}), 201
