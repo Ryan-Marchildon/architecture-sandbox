@@ -109,6 +109,9 @@ class Batch:
                 f"Could not de-allocate order line; does not exist in this batch."
             )
 
+    def deallocate_one(self) -> OrderLine:
+        return self._allocations.pop()
+
     @property
     def allocated_quantity(self) -> int:
         return sum(line.qty for line in self._allocations)
@@ -145,3 +148,14 @@ class Product:
         except StopIteration:
             self.events.append(events.OutOfStock(line.sku))
             return None
+
+    def change_batch_quantity(self, ref: str, qty: int):
+        batch = next(b for b in self.batches if b.reference == ref)
+        batch._purchased_quantity = qty
+        while batch.available_quantity < 0:
+            # de-allocate line orders from the existing batch
+            # and try to assign them to another available batch
+            line = batch.deallocate_one()
+            self.events.append(
+                events.AllocationRequest(line.orderid, line.sku, line.qty)
+            )

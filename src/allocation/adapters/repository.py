@@ -2,6 +2,7 @@ import abc
 from typing import Set
 
 from src.allocation.domain import model
+from src.allocation.adapters import orm
 
 
 class AbstractProductRepository(abc.ABC):
@@ -18,12 +19,22 @@ class AbstractProductRepository(abc.ABC):
             self.seen.add(product)
         return product
 
+    def get_by_batchref(self, batchref) -> model.Product:
+        product = self._get_by_batchref(batchref)
+        if product:
+            self.seen.add(product)
+        return product
+
     @abc.abstractmethod
     def _add(self, product: model.Product):
         raise NotImplementedError
 
     @abc.abstractmethod
     def _get(self, sku) -> model.Product:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_by_batchref(self, batchref) -> model.Product:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -42,6 +53,13 @@ class SqlAlchemyRepository(AbstractProductRepository):
     def _get(self, sku: str):
         return self.session.query(model.Product).filter_by(sku=sku).first()
 
+    def _get_by_batchref(self, batchref):
+        return (
+            self.session.query(model.Product)
+            .join(model.Batch)
+            .filter(orm.batches.c.reference == batchref)
+        ).first()
+
     def list(self):
         return self.session.query(model.Product).all()
 
@@ -57,6 +75,12 @@ class FakeRepository(AbstractProductRepository):
 
     def _get(self, sku: str):
         return next((p for p in self._products if p.sku == sku), None)
+
+    def _get_by_batchref(self, batchref):
+        return next(
+            (p for p in self._products for b in p.batches if b.reference == batchref),
+            None,
+        )
 
     def list(self):
         return list(self._products)

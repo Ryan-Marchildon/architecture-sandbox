@@ -2,8 +2,9 @@ from typing import Optional
 from datetime import date
 
 from src.utils.logger import log
-from src.allocation.domain import model
+from src.allocation.domain import model, events
 from src.allocation.service_layer import unit_of_work
+from src.allocation.adapters import email
 
 
 class InvalidSku(Exception):
@@ -14,26 +15,32 @@ def is_valid_sku(sku, batches):
     return sku in {batch.sku for batch in batches}
 
 
+def send_out_of_stock_notification(
+    event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork
+):
+    email.send(
+        "stock@made.com",
+        f"Out of stock for {event.sku}",
+    )
+
+
 def add_batch(
-    ref: str,
-    sku: str,
-    qty: int,
-    eta: Optional[date],
+    event: events.BatchCreated,
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
-        product = uow.products.get(sku=sku)
+        product = uow.products.get(sku=event.sku)
         if product is None:
-            product = model.Product(sku, batches=[])
+            product = model.Product(event.sku, batches=[])
             uow.products.add(product)
-        product.batches.append(model.Batch(ref, sku, qty, eta))
+        product.batches.append(model.Batch(event.ref, event.sku, event.qty, event.eta))
         uow.commit()
 
 
 def allocate(
-    orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitOfWork
+    event: events.AllocationRequest, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
-    line = model.OrderLine(orderid, sku, qty)
+    line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
@@ -43,8 +50,8 @@ def allocate(
         return batchref
 
 
-def deallocate(orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitOfWork):
-    line = model.OrderLine(orderid, sku, qty)
+def deallocate(event: events.DeallocationRequest, uow: unit_of_work.AbstractUnitOfWork):
+    line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:
@@ -59,3 +66,12 @@ def deallocate(orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitO
             raise model.OrderNotFound(
                 f"Could not find an allocation for line {line.orderid}"
             )
+
+
+def change_batch_quantity(
+    event: events.BatchQuantityChanged, uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        product = uow.products.get_by_batchref(batchref=event.ref)
+        product.change_batch_quantity(ref=event.ref, qty=event.qty)
+        uow.commit()
