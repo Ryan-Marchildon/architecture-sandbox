@@ -153,6 +153,8 @@ class Product:
         batch = next(b for b in self.batches if b.reference == ref)
         batch._purchased_quantity = qty
         while batch.available_quantity < 0:
+            # de-allocate line orders from the existing batch
+            # and try to assign them to another available batch
             line = batch.deallocate_one()
             self.events.append(
                 events.AllocationRequest(line.orderid, line.sku, line.qty)
