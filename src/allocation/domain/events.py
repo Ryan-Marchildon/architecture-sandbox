@@ -26,3 +26,10 @@ class AllocationRequest(Event):
     orderid: str
     sku: str
     qty: int
+
+
+@dataclass
+class DeallocationRequest(Event):
+    orderid: str
+    sku: str
+    qty: int

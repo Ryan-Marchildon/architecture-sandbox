@@ -47,7 +47,7 @@ def add_batch(
 
 
 def allocate(
-    event: events.AllocationRequired, uow: unit_of_work.AbstractUnitOfWork
+    event: events.AllocationRequest, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
     line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
@@ -59,8 +59,8 @@ def allocate(
         return batchref
 
 
-def deallocate(orderid: str, sku: str, qty: int, uow: unit_of_work.AbstractUnitOfWork):
-    line = model.OrderLine(orderid, sku, qty)
+def deallocate(event: events.DeallocationRequest, uow: unit_of_work.AbstractUnitOfWork):
+    line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
         if product is None:

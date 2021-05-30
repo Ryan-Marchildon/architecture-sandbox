@@ -17,8 +17,8 @@ def test_add_batch_for_existing_product():
     uow = FakeUnitOfWork()
     messagebus.handle(
         [
-            events.BatchCreated("b1", "GARISH-RUG", 100, None, uow),
-            events.BatchCreated("b2", "GARISH-RUG", 99, None, uow),
+            events.BatchCreated("b1", "GARISH-RUG", 100, None),
+            events.BatchCreated("b2", "GARISH-RUG", 99, None),
         ],
         uow,
     )
@@ -101,7 +101,7 @@ def test_deallocate_results_in_correct_quantity():
 
 def test_trying_to_deallocate_unallocated_batch():
     uow = FakeUnitOfWork()
-    messagebus.handle([events.BatchCreated("b1", "BLUE-PLINTH", 100, None)], uow)
+    messagebus.handle(events.BatchCreated("b1", "BLUE-PLINTH", 100, None), uow)
 
     with pytest.raises(model.OrderNotFound):
         messagebus.handle([events.DeallocationRequest("o1", "BLUE-PLINTH", 10)], uow)
