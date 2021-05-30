@@ -75,3 +75,12 @@ def deallocate(event: events.DeallocationRequest, uow: unit_of_work.AbstractUnit
             raise model.OrderNotFound(
                 f"Could not find an allocation for line {line.orderid}"
             )
+
+
+def change_batch_quantity(
+    event: events.BatchQuantityChanged, uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        product = uow.products.get_by_batchref(batchref=event.ref)
+        product.change_batch_quantity(ref=event.ref, qty=event.qty)
+        uow.commit()

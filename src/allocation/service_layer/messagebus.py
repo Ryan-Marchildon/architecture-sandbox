@@ -27,4 +27,5 @@ HANDLERS = {
     events.BatchCreated: [handlers.add_batch],
     events.AllocationRequest: [handlers.allocate],
     events.DeallocationRequest: [handlers.deallocate],
+    events.BatchQuantityChanged: [handlers.change_batch_quantity],
 }  # type: Dict[Type[events.Event], List[Callable]]

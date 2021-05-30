@@ -139,13 +139,13 @@ class TestChangeBatchQuantity:
         assert batch.available_quantity == 50
 
     @staticmethod
-    def test_reallocates_if_necessary(self):
+    def test_reallocates_if_necessary():
         uow = FakeUnitOfWork()
         event_history = [
             events.BatchCreated("batch1", "INDIFFERENT-TABLE", 50, None),
             events.BatchCreated("batch2", "INDIFFERENT-TABLE", 50, date.today()),
             events.AllocationRequest("order1", "INDIFFERENT-TABLE", 20),
-            events.AllocationRequest("order2", "INDIFERRENT-TABLE", 20),
+            events.AllocationRequest("order2", "INDIFFERENT-TABLE", 20),
         ]
         for e in event_history:
             messagebus.handle(e, uow)
