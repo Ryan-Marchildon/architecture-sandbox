@@ -4,20 +4,11 @@ from datetime import date
 from src.utils.logger import log
 from src.allocation.domain import model, events
 from src.allocation.service_layer import unit_of_work
+from src.allocation.adapters import email
 
 
 class InvalidSku(Exception):
     pass
-
-
-class email:
-    """
-    Quick mock of an email service.
-    """
-
-    @staticmethod
-    def send_email(email_domain, email_msg):
-        pass
 
 
 def is_valid_sku(sku, batches):
@@ -27,7 +18,7 @@ def is_valid_sku(sku, batches):
 def send_out_of_stock_notification(
     event: events.OutOfStock, uow: unit_of_work.AbstractUnitOfWork
 ):
-    email.send_email(
+    email.send(
         "stock@made.com",
         f"Out of stock for {event.sku}",
     )
