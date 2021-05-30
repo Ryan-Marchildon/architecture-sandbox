@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from src.allocation.domain import model, events
@@ -121,3 +123,39 @@ class TestDeallocate:
             messagebus.handle(
                 [events.DeallocationRequest("o1", "BLUE-PLINTH", 10)], uow
             )
+
+
+class TestChangeBatchQuantity:
+    @staticmethod
+    def test_changes_available_quantity():
+        uow = FakeUnitOfWork()
+        messagebus.handle(
+            events.BatchCreated("batch1", "ADORABLE-STOOL", 100, None), uow
+        )
+        [batch] = uow.products.get(sku="ADORABLE-STOOL").batches
+        assert batch.available_quantity == 100
+
+        messagebus.handle(events.BatchQuantityChanged("batch1", 50), uow)
+        assert batch.available_quantity == 50
+
+    @staticmethod
+    def test_reallocates_if_necessary(self):
+        uow = FakeUnitOfWork()
+        event_history = [
+            events.BatchCreated("batch1", "INDIFFERENT-TABLE", 50, None),
+            events.BatchCreated("batch2", "INDIFFERENT-TABLE", 50, date.today()),
+            events.AllocationRequest("order1", "INDIFFERENT-TABLE", 20),
+            events.AllocationRequest("order2", "INDIFERRENT-TABLE", 20),
+        ]
+        for e in event_history:
+            messagebus.handle(e, uow)
+        [batch1, batch2] = uow.products.get(sku="INDIFFERENT-TABLE").batches
+        assert batch1.available_quantity == 10
+        assert batch2.available_quantity == 50
+
+        messagebus.handle(events.BatchQuantityChanged("batch1", 25), uow)
+
+        # order 1 or order 2 will be de-allocated, so we will have 25 - 20
+        assert batch1.available_quantity == 5
+        # and 20 will be re-allocated to the next batch
+        assert batch2.available_quantity == 30
