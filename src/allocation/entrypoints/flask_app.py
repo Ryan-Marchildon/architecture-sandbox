@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 
 from src.allocation import config
-from src.allocation.domain import model, events
+from src.allocation.domain import model, commands
 from src.allocation.adapters import orm
 from src.allocation.service_layer import handlers, messagebus, unit_of_work
 
@@ -16,10 +16,10 @@ app = Flask(__name__)
 def allocate_endpoint():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     try:
-        event = events.AllocationRequest(
+        cmd = commands.Allocate(
             request.json["orderid"], request.json["sku"], request.json["qty"]
         )
-        results = messagebus.handle(event, uow)
+        results = messagebus.handle(cmd, uow)
         batchref = results.pop(0)
     except handlers.InvalidSku as e:
         return jsonify({"message": str(e)}), 400
@@ -31,10 +31,10 @@ def allocate_endpoint():
 def deallocate_endpoint():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     try:
-        event = events.DeallocationRequest(
+        cmd = commands.Deallocate(
             request.json["orderid"], request.json["sku"], request.json["qty"]
         )
-        results = messagebus.handle(event, uow)
+        results = messagebus.handle(cmd, uow)
         batchref = results.pop(0)
 
     except handlers.InvalidSku as e:
@@ -50,10 +50,10 @@ def add_batch():
     if eta is not None:
         eta = datetime.fromisoformat(eta).date()
 
-    event = events.BatchCreated(
+    cmd = commands.CreateBatch(
         request.json["ref"], request.json["sku"], request.json["qty"], eta
     )
-    messagebus.handle(event, uow)
+    messagebus.handle(cmd, uow)
 
     return "OK", 201
 

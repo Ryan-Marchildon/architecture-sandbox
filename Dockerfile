@@ -10,6 +10,7 @@ COPY tests/ /tests/
 COPY setup.py /setup.py
 COPY requirements.txt /requirements.txt
 COPY README.md /README.md
+RUN python -m pip install --upgrade pip
 RUN pip install -e /
 
 # clean-up

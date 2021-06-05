@@ -8,7 +8,7 @@ from datetime import date
 from dataclasses import dataclass
 
 from src.utils.logger import log
-from src.allocation.domain import events
+from src.allocation.domain import events, commands
 
 # -----------------
 # DOMAIN EXCEPTIONS
@@ -156,6 +156,4 @@ class Product:
             # de-allocate line orders from the existing batch
             # and try to assign them to another available batch
             line = batch.deallocate_one()
-            self.events.append(
-                events.AllocationRequest(line.orderid, line.sku, line.qty)
-            )
+            self.events.append(commands.Allocate(line.orderid, line.sku, line.qty))
