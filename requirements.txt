@@ -1,6 +1,39 @@
-pytest==6.2.2
+appdirs==1.4.4
+astroid==2.5.2
+attrs==20.3.0
 black==20.8b1
-SQLAlchemy==1.4.3
+certifi==2020.12.5
+chardet==4.0.0
+click==7.1.2
 Flask==1.1.2
-requests==2.25.1
+greenlet==1.0.0
+idna==2.10
+iniconfig==1.1.1
+isort==5.8.0
+itsdangerous==1.1.0
+Jinja2==2.11.3
+lazy-object-proxy==1.6.0
+MarkupSafe==1.1.1
+mccabe==0.6.1
+mypy @ file:///home/conda/feedstock_root/build_artifacts/mypy_1617320092651/work
+mypy-extensions @ file:///home/conda/feedstock_root/build_artifacts/mypy_extensions_1610127166397/work
+packaging==20.9
+pathspec==0.8.1
+pluggy==0.13.1
+psutil @ file:///home/conda/feedstock_root/build_artifacts/psutil_1610127095958/work
 psycopg2-binary==2.8.6
+py==1.10.0
+pylint==2.7.2
+pyparsing==2.4.7
+pytest==6.2.2
+regex==2021.3.17
+requests==2.25.1
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
+SQLAlchemy==1.4.3
+tenacity==7.0.0
+toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
+typed-ast @ file:///home/conda/feedstock_root/build_artifacts/typed-ast_1618337594377/work
+typing-extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1602702424206/work
+urllib3==1.26.4
+Werkzeug==1.0.1
+wrapt==1.12.1
