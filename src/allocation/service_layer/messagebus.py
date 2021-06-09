@@ -1,3 +1,4 @@
+from src.allocation.domain.model import OutOfStock
 from typing import Dict, Type, List, Callable, Union
 
 from tenacity import Retrying, RetryError, stop_after_attempt, wait_exponential
@@ -65,6 +66,7 @@ def handle_command(
 
 EVENT_HANDLERS = {
     events.OutOfStock: [handlers.send_out_of_stock_notification],
+    events.Allocated: [handlers.publish_allocation_event],
 }  # type: Dict[Type[events.Event], List[Callable]]
 
 

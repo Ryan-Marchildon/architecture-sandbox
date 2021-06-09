@@ -4,7 +4,7 @@ from datetime import date
 from src.utils.logger import log
 from src.allocation.domain import model, events, commands
 from src.allocation.service_layer import unit_of_work
-from src.allocation.adapters import email
+from src.allocation.adapters import email, redis_eventpublisher
 
 
 class InvalidSku(Exception):
@@ -73,3 +73,10 @@ def change_batch_quantity(
         product = uow.products.get_by_batchref(batchref=event.ref)
         product.change_batch_quantity(ref=event.ref, qty=event.qty)
         uow.commit()
+
+
+def publish_allocation_event(
+    event: events.Allocated,
+    uow: unit_of_work.AbstractUnitOfWork,
+):
+    redis_eventpublisher.publish("line_allocated", event)

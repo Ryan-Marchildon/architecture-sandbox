@@ -64,3 +64,14 @@ def test_increments_version_number():
     product.version_number = 7
     product.allocate(line)
     assert product.version_number == 8
+
+
+def test_outputs_allocated_event():
+    batch = Batch("batchref", "RETRO-LAMPSHADE", 100, eta=None)
+    line = OrderLine("oref", "RETRO-LAMPSHADE", 10)
+    product = Product(sku="RETRO-LAMPSHADE", batches=[batch])
+    product.allocate(line)
+    expected = events.Allocated(
+        orderid="oref", sku="RETRO-LAMPSHADE", qty=10, batchref=batch.reference
+    )
+    assert product.events[-1] == expected

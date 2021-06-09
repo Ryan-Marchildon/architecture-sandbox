@@ -1,6 +1,9 @@
 import json
+
 import pytest
 from tenacity import Retrying, RetryError, stop_after_delay
+
+from src.utils.logger import log
 from tests.e2e import api_client, redis_client
 from tests.random_refs import random_batchref, random_orderid, random_sku
 
@@ -27,12 +30,12 @@ def test_change_batch_quantity_leading_to_reallocation():
 
     # wait until we see a message saying the order has been reallocated
     messages = []
-    for attempt in Retrying(stop=stop_after_delay(3), reraise=True):
+    for attempt in Retrying(stop=stop_after_delay(5), reraise=True):
         with attempt:
-            message = subscription.get_message(timeout=1)
+            message = subscription.get_message(timeout=3)
             if message:
                 messages.append(message)
-                print(messages)
+                log.debug(messages)
             data = json.loads(messages[-1]["data"])
             assert data["orderid"] == orderid
             assert data["batchref"] == later_batch
