@@ -23,6 +23,7 @@ py==1.10.0
 pylint==2.7.2
 pyparsing==2.4.7
 pytest==6.2.2
+redis
 regex==2021.3.17
 requests==2.25.1
 SQLAlchemy==1.4.3
