@@ -1,8 +1,11 @@
 import time
-
-import pytest
+import shutil
+import subprocess
 import requests
 from requests.exceptions import ConnectionError
+
+import pytest
+import redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 from sqlalchemy.exc import OperationalError
@@ -125,3 +128,26 @@ def wait_for_webapp_spinup():
 def restart_api():
     # TODO: add shell command to start flask
     wait_for_webapp_spinup()
+
+
+def wait_for_redis_spinup():
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        try:
+            r = redis.Redis(**config.get_redis_host_and_port())
+            return r.ping()
+        except OperationalError:
+            time.sleep(0.5)
+    pytest.fail("Redis never spun up")
+
+
+@pytest.fixture
+def restart_redis_pubsub():
+    wait_for_redis_spinup()
+    if not shutil.which("docker-compose"):
+        print("skipping restart, assumes running in container")
+        return
+    subprocess.run(
+        ["docker-compose", "restart", "-t", "0", "redis_pubsub"],
+        check=True,
+    )

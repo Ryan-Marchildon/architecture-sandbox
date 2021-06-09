@@ -52,7 +52,7 @@ def handle_command(
     queue: List[Message],
     uow: unit_of_work.AbstractUnitOfWork,
 ):
-    log.debug(f"handling commend {command}")
+    log.debug(f"handling command {command}")
     try:
         handler = COMMAND_HANDLERS[type(command)]
         result = handler(command, uow=uow)

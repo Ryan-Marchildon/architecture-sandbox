@@ -2,8 +2,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request
 
-from src.allocation import config
-from src.allocation.domain import model, commands
+from src.allocation.domain import commands
 from src.allocation.adapters import orm
 from src.allocation.service_layer import handlers, messagebus, unit_of_work
 
@@ -43,7 +42,7 @@ def deallocate_endpoint():
     return jsonify({"batchref": batchref}), 201
 
 
-@app.route("/batches", methods=["POST"])
+@app.route("/add_batch", methods=["POST"])
 def add_batch():
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     eta = request.json["eta"]

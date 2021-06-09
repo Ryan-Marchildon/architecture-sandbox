@@ -2,7 +2,7 @@ from typing import Optional
 from datetime import date
 
 from src.utils.logger import log
-from src.allocation.domain import model, events
+from src.allocation.domain import model, events, commands
 from src.allocation.service_layer import unit_of_work
 from src.allocation.adapters import email
 
@@ -25,7 +25,7 @@ def send_out_of_stock_notification(
 
 
 def add_batch(
-    event: events.BatchCreated,
+    event: commands.CreateBatch,
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
@@ -37,9 +37,7 @@ def add_batch(
         uow.commit()
 
 
-def allocate(
-    event: events.AllocationRequest, uow: unit_of_work.AbstractUnitOfWork
-) -> str:
+def allocate(event: commands.Allocate, uow: unit_of_work.AbstractUnitOfWork) -> str:
     line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
@@ -50,7 +48,7 @@ def allocate(
         return batchref
 
 
-def deallocate(event: events.DeallocationRequest, uow: unit_of_work.AbstractUnitOfWork):
+def deallocate(event: commands.Deallocate, uow: unit_of_work.AbstractUnitOfWork):
     line = model.OrderLine(event.orderid, event.sku, event.qty)
     with uow:
         product = uow.products.get(sku=line.sku)
@@ -69,7 +67,7 @@ def deallocate(event: events.DeallocationRequest, uow: unit_of_work.AbstractUnit
 
 
 def change_batch_quantity(
-    event: events.BatchQuantityChanged, uow: unit_of_work.AbstractUnitOfWork
+    event: commands.ChangeBatchQuantity, uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
         product = uow.products.get_by_batchref(batchref=event.ref)
