@@ -39,3 +39,6 @@ def test_change_batch_quantity_leading_to_reallocation():
             data = json.loads(messages[-1]["data"])
             assert data["orderid"] == orderid
             assert data["batchref"] == later_batch
+
+
+# TODO : debug redis pubsub, not clear that messages are being succesfully published
